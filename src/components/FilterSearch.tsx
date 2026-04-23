@@ -1,65 +1,47 @@
 import { useEffect, useState } from 'react'
 import { TextInput, Select } from '@mantine/core'
 import { useDebouncedValue } from '@mantine/hooks'
-import type { ICharacter, ICharacterFilters, IInfo } from '../types/api.type'
-import { useFilterCharacters } from '../hooks/useServices'
 import { MagnifyingGlassIcon } from '@phosphor-icons/react'
+import { STATUS_OPTIONS } from '../constants'
+import type { ICharacterFilters } from '../types/api.type'
 
-interface FilterSearchProps {
-  page: number
-  onResults: (characters: ICharacter[], info: IInfo | undefined, loading: boolean) => void
-  onFiltersChange: () => void
+export interface FilterValues {
+  name: string
+  status: ICharacterFilters['status'] | ''
 }
 
-const STATUS_OPTIONS = [
-  { value: '', label: 'Todos' },
-  { value: 'alive', label: 'Alive' },
-  { value: 'dead', label: 'Dead' },
-  { value: 'unknown', label: 'Unknown' },
-]
+interface FilterSearchProps {
+  value: FilterValues
+  onChange: (value: FilterValues) => void
+}
 
-function FilterSearch({ page, onResults, onFiltersChange }: FilterSearchProps) {
-  const [name, setName] = useState('')
-  const [status, setStatus] = useState('')
-  const [debouncedName] = useDebouncedValue(name, 400)
-
-  const { filterCharacters, characters, info, loading } = useFilterCharacters()
+function FilterSearch({ value, onChange }: FilterSearchProps) {
+  const [localName, setLocalName] = useState(value.name)
+  const [debouncedName] = useDebouncedValue(localName, 400)
 
   useEffect(() => {
-    const filters: ICharacterFilters = { page }
-    if (debouncedName) filters.name = debouncedName
-    if (status) filters.status = status as ICharacterFilters['status']
-    filterCharacters(filters)
-  }, [debouncedName, status, page])
-
-  useEffect(() => {
-    onResults(characters ?? [], info, loading)
-  }, [characters, info, loading])
-
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setName(e.currentTarget.value)
-    onFiltersChange()
-  }
-
-  const handleStatusChange = (val: string | null) => {
-    setStatus(val ?? '')
-    onFiltersChange()
-  }
+    const trimmed = debouncedName.trim()
+    if (trimmed !== value.name) {
+      onChange({ ...value, name: trimmed })
+    }
+  }, [debouncedName])
 
   return (
     <>
       <TextInput
         placeholder="Busca un personaje por: Nombre"
         leftSection={<MagnifyingGlassIcon size={16} />}
-        value={name}
-        onChange={handleNameChange}
+        value={localName}
+        onChange={(e) => setLocalName(e.currentTarget.value)}
         style={{ flex: 1 }}
       />
       <Select
         placeholder="Estado"
         data={STATUS_OPTIONS}
-        value={status}
-        onChange={handleStatusChange}
+        value={value.status}
+        onChange={(v) =>
+          onChange({ ...value, status: (v ?? '') as FilterValues['status'] })
+        }
         clearable
         w={130}
       />

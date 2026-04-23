@@ -1,6 +1,8 @@
-import { useEffect } from 'react'
-import { Modal, Image, Text, Badge, Group, Stack, Divider, Skeleton } from '@mantine/core'
-import { useSingleCharacter } from '../hooks/useServices'
+import { Modal, Image, Text, Badge, Group, Stack, Divider, Skeleton, Button } from '@mantine/core'
+import { StarIcon } from '@phosphor-icons/react'
+import { useCharacter } from '../hooks/useServices'
+import { useFavoritesStore } from '../store/favoritesStore'
+import { STATUS_COLOR } from '../constants'
 
 interface ModalDetailProps {
   id: number | null
@@ -8,20 +10,12 @@ interface ModalDetailProps {
   onClose: () => void
 }
 
-const STATUS_COLOR: Record<string, string> = {
-  Alive: 'teal',
-  Dead: 'red',
-  unknown: 'gray',
-}
-
 function ModalDetail({ id, opened, onClose }: ModalDetailProps) {
-  const { character, singleCharacter, loading } = useSingleCharacter(id ?? 0)
-
-  useEffect(() => {
-    if (opened && id !== null) {
-      singleCharacter()
-    }
-  }, [opened, id])
+  const { data: character, isLoading } = useCharacter(opened ? id : null)
+  const toggleFavorite = useFavoritesStore((s) => s.toggleFavorite)
+  const favorite = useFavoritesStore((s) =>
+    character ? s.favorites.some((c) => c.id === character.id) : false,
+  )
 
   return (
     <Modal
@@ -32,7 +26,7 @@ function ModalDetail({ id, opened, onClose }: ModalDetailProps) {
       size="sm"
       styles={{ title: { fontWeight: 600 } }}
     >
-      {loading ? (
+      {isLoading ? (
         <Stack gap="md">
           <Skeleton height={240} radius="md" />
           <Group justify="center">
@@ -74,6 +68,17 @@ function ModalDetail({ id, opened, onClose }: ModalDetailProps) {
             <DetailRow label="Última ubicación" value={character.location.name} />
             <DetailRow label="Episodios" value={String(character.episode.length)} />
           </Stack>
+
+          <Button
+            fullWidth
+            mt="md"
+            variant={favorite ? 'filled' : 'outline'}
+            color={favorite ? 'red' : 'yellow'}
+            leftSection={<StarIcon weight={favorite ? 'fill' : 'regular'} size={18} />}
+            onClick={() => toggleFavorite(character)}
+          >
+            {favorite ? 'Eliminar de favoritos' : 'Añadir a favoritos'}
+          </Button>
         </Stack>
       ) : null}
     </Modal>

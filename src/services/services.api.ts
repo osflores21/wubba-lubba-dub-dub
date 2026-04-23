@@ -5,24 +5,13 @@ import type {
 } from "../types/api.type";
 import { axiosInstance } from "./config";
 
-export const getListCharacters = async (
-  filters: ICharacterFilters,
-): Promise<ICharacter[]> => {
-  const data = await axiosInstance.get<IApiResponse>(`/api/character`, {
-    params: {
-      page: filters.page,
-    },
-  });
-  return data.data.results;
-};
-
 export const getSingleCharacter = async (id: number): Promise<ICharacter> => {
   const data = await axiosInstance.get<ICharacter>(`/api/character/${id}`);
   return data.data;
 };
 
-export const getFilteredCharacters = async (
-  filters: ICharacterFilters,
+export const getCharacters = async (
+  filters: ICharacterFilters = {},
 ): Promise<IApiResponse> => {
   const data = await axiosInstance.get<IApiResponse>(`/api/character`, {
     params: {

@@ -1,80 +1,47 @@
-import { Button, Container, Group, Stack } from "@mantine/core";
-import { StarIcon } from "@phosphor-icons/react"
-import Header from "../components/UI/Header";
-import CharacterTable from "../components/CharacterTable";
-import FilterSearch from "../components/FilterSearch";
-import { useState } from "react";
-import type { ICharacter, IInfo } from "../types/api.type";
-import CharacterPagination from "../components/CharacterPagination";
+import { Button, Stack, Group } from '@mantine/core'
+import { StarIcon } from '@phosphor-icons/react'
+import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
+import FilterSearch, { type FilterValues } from '../components/FilterSearch'
+import CharacterGrid from '../components/CharacterGrid'
+import CharacterPagination from '../components/CharacterPagination'
+import { useCharacters } from '../hooks/useServices'
 
 export default function Home() {
-  const [filtered, setFiltered] = useState<ICharacter[] | null>(null)
-  const [filterLoading, setFilterLoading] = useState(false)
+  const navigate = useNavigate()
+  const [filters, setFilters] = useState<FilterValues>({ name: '', status: '' })
   const [page, setPage] = useState(1)
-  const [info, setInfo] = useState<IInfo | undefined>()
-  const [showFavorites, setShowFavorites] = useState(false)
 
-  const handleResults = (characters: ICharacter[], info: IInfo | undefined, loading: boolean) => {
-    setFiltered(characters)
-    setInfo(info)
-    setFilterLoading(loading)
-  }
-
-  const handleFavoritesToggle = () => {
-    setShowFavorites(!showFavorites)
+  const handleFiltersChange = (next: FilterValues) => {
+    setFilters(next)
     setPage(1)
   }
 
+  const { data, isLoading } = useCharacters({
+    page,
+    name: filters.name || undefined,
+    status: filters.status || undefined,
+  })
+
   return (
-    <Container size="xl">
-      <Header />
-      <Stack my="lg" gap="md">
-        <Group w="100%" wrap="nowrap" justify="space-between">
-          <Group wrap="nowrap" style={{ flex: showFavorites ? 0 : 1 }}>
-
-            {!showFavorites && (
-              <FilterSearch
-                page={page}
-                onResults={handleResults}
-                onFiltersChange={() => setPage(1)}
-              />
-            )}
-          </Group>
-          {!showFavorites &&
-            <Button
-              variant={showFavorites ? "filled" : "outline"}
-              color={showFavorites ? "#043c6e" : "gold"}
-              leftSection={<StarIcon size={16} />}
-              onClick={handleFavoritesToggle}
-            >
-              Ver favoritos
-            </Button>
-          }
-          {showFavorites && (
-            <Button
-              variant="subtle"
-              size="xs"
-              onClick={handleFavoritesToggle}
-            >
-              Regresar
-            </Button>
-          )}
+    <Stack my="lg" gap="md">
+      <Group w="100%" wrap="nowrap" justify="space-between">
+        <Group wrap="nowrap" style={{ flex: 1 }}>
+          <FilterSearch value={filters} onChange={handleFiltersChange} />
         </Group>
+        <Button
+          variant="outline"
+          color="gold"
+          leftSection={<StarIcon size={16} />}
+          onClick={() => navigate('/favoritos')}
+        >
+          Ver favoritos
+        </Button>
+      </Group>
 
-        <CharacterTable
-          filtered={filtered}
-          filterLoading={filterLoading}
-          showOnlyFavorites={showFavorites}
-        />
+      <CharacterGrid characters={data?.results} loading={isLoading} />
 
-        {!showFavorites && (
-          <CharacterPagination
-            info={info}
-            page={page}
-            onPageChange={setPage}
-          />
-        )}
-      </Stack>
-    </Container>
+      <CharacterPagination info={data?.info} page={page} onPageChange={setPage} />
+    </Stack>
   )
 }
