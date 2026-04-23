@@ -68,6 +68,10 @@ MIT License
 - [Mantine UI](https://mantine.dev/)
 - [React](https://react.dev/)
 
+## 👤 Autor
+
+**Oswaldo Flores Morales**
+
 ---
 
 **¡Hecho con ❤️ y mucho Pickle Rick! 🥒**
