@@ -1,3 +1,4 @@
+import '@testing-library/jest-dom'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { screen, fireEvent } from '@testing-library/react'
 import CharacterCard from '../components/CharacterCard'
