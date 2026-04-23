@@ -15,12 +15,12 @@ function CharacterPagination({ info, page, onPageChange }: CharacterPaginationPr
   const hasNext = info.next !== null
 
   return (
-    <Group justify="space-between" align="center" my="lg" wrap="wrap">
+    <Group justify={"center"} align="center" my="lg" wrap="wrap">
       <Text size="sm" c="dimmed">
         {info.count} personajes · página {page} de {info.pages}
       </Text>
 
-      <Group gap="xs">
+      <Group gap="xs" >
         <Button
           variant="default"
           leftSection={<CaretLeftIcon size={14} />}
